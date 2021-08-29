@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿// написано в процессе изучения языка С++ на курсе Yandex.praktikum
+
+#include <iostream>
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -87,15 +89,6 @@ public:
             }
         }
     }
-
-    //template <typename StringContainer>
-    //explicit SearchServer(const StringContainer& stop_words)
-    //    : stop_words_(MakeUniqueNonEmptyStrings(stop_words))  // Extract non-empty stop words
-    //{
-    //    if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
-    //        throw invalid_argument("Some of stop words are invalid"s);
-    //    }
-    //}
 
     explicit SearchServer(const string& stop_words_text)
         : SearchServer(SplitIntoWords(stop_words_text)) {
@@ -308,8 +301,6 @@ private:
     }
 };
 
-
-
 void PrintDocument(const Document& document) {
     cout << "{ "s
         << "document_id = "s << document.id << ", "s
@@ -320,13 +311,10 @@ void PrintDocument(const Document& document) {
 
 
 int main() {
-    // throw есть; необходимо добавит catch
     setlocale(LC_ALL, "RUS");
 
     try {
-        // 210710
-        // РАБОТА БЕЗ ОШИБОК В ДОКУМЕНТАХ ИЛИ ЗАПРОСЕ
-       /* SearchServer search_server("и в на"s);
+         SearchServer search_server("и в на"s);
 
         search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });
         search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
@@ -347,102 +335,9 @@ int main() {
         cout << "Even ids:"s << endl;
         for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; })) {
             PrintDocument(document);
-        }*/
-        // ИТОГ ПРОВЕРКИ: все работает, как ожидалось
-
-
-        // РАБОТА С ЗАПЛАНИРОВННЫМИ ОШИБКАМИ В ИНИЦИАЛИЗАЦИИ КЛАССА И ДОКУМЕНТАХ
-        //    - неправильные стоп-слова
-        //    - неверный id документа
-        //    - недопустимые символы
-
-        // поочередно запускаем каждую ошибку и смотрим на результат         
-
-        //// SearchServer search_server("и в н\x12а"s);                                                                      // проверка на "левые" символы в стоп-словах  // 210710 15_50 выбрасывает сообщение об ошибке в стоп-словах
-        //SearchServer search_server("и в на"s);                                                                               // норм
-
-        //// потребуются как "нормальные" документы, так и ошибочные        
-
-        // search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });                     // норм
-        // search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });                  // норм
-        //// search_server.AddDocument(1, "ухоженный пёс пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });         // проверка на повтор id                         // 210710 15_53 выбрасывает сообщение об ошибке в id документа
-        // search_server.AddDocument(2, "ухоженный пёс выразительные глаза"s, DocumentStatus::ACTUAL, { 5, -12, 2, 1 });       // норм
-        //// search_server.AddDocument(-2, "ухоженный скворе и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });     // проверка на отрицательный id                  // 210710 15_55 выбрасывает сообщение об ошибке в id документа
-        //search_server.AddDocument(4, "белый кот скво\x12рец хвост"s, DocumentStatus::ACTUAL, { 8, -3 });            // проверка на "левые" символы в документе         // 210710 15_56 выбрасывает сообщение о наличии неверных символов
-        //// search_server.AddDocument(3, "ухоженный скворец евгений"s, DocumentStatus::BANNED, { 9 });                          // норм
-        //
-        //// запрос без ошибок
-        //cout << "ACTUAL by default:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s)) {
-        //    PrintDocument(document);
-        //}
-
-        //cout << "BANNED:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, DocumentStatus::BANNED)) {
-        //    PrintDocument(document);
-        //}
-
-        //cout << "Even ids:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; })) {
-        //    PrintDocument(document);
-        //}
-        // ИТОГ ПРОВЕРКИ: при возникновении ОДНОЙ из нескольких ошибок все работает,как ожидалось; при наличии нескольких ошибок сообщается о той, которая возникает раньше
-
-
-        // РАБОТА С ЗАПЛАНИРОВННЫМИ ОШИБКАМИ В ЗАПРОСАХ
-        //    - неверный текст запроса
-        //    - отсутствие запроса
-
-        // поочередно запускаем каждую ошибку и смотрим на результат
-
-        // без ошибок
-        SearchServer search_server("и в на"s);
-
-        search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });
-        search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-        search_server.AddDocument(2, "ухоженный пёс выразительные глаза"s, DocumentStatus::ACTUAL, { 5, -12, 2, 1 });
-        search_server.AddDocument(3, "белый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 8, -3 });
-        search_server.AddDocument(4, "ухоженный скворец евгений"s, DocumentStatus::BANNED, { 9 });
-
-        // проверочный запрос запрос
-           // 210710
-        //cout << "ACTUAL by default:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments(""s)) {                                  // проверка на empty                       // выводит сообщение о пустом запросе
-        //    PrintDocument(document);
-        //}
-
-        //cout << "ACTUAL by default:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный --кот"s)) {          // проверка на --перед словом               // выводит сообщение о ошибке в слове запроса
-        //    PrintDocument(document);
-        //}
-
-        //cout << "ACTUAL by default:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный - кот"s)) {          // проверка на - слово                      // выводит сообщение о ошибке в слове запроса
-        //    PrintDocument(document);
-        //}
-
-        //cout << "ACTUAL by default:"s << endl;
-        //for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный - "s)) {             // проверка на -                            // выводит сообщение о ошибке в слове запроса
-        //    PrintDocument(document);
-        //}
-
-        cout << "ACTUAL by default:"s << endl;
-        for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный -- "s)) {            // проверка на --                            // выводит сообщение о ошибке в слове запроса
-            PrintDocument(document);
-        }
-
-        cout << "ACTUAL by default:"s << endl;
-        for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный -кот "s)) {          // проверка на -слово                        // исключает документы, содержащиние минус-слово
-            PrintDocument(document);
-        }
-
-        cout << "ACTUAL by default:"s << endl;
-        for (const Document& document : search_server.FindTopDocuments("пушистый скво\x12рец кот"s)) {          // проверка на "левые" символы                 // выводит сообщение о неверном слове в запросе
-            PrintDocument(document);
-        }
+        }        
     }
     catch (const exception& e) {
-        // изменить содержание фразы "Неверный формат ввода стоп-слов: "
         cout << e.what() << endl;
     }
 
